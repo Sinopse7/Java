@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.*;
 
-//minuto 51:21
-
 public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     int boardWidth = 360;
     int boardHeight = 640;
@@ -70,9 +68,9 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     double score = 0;
 
 
+
     FlappyBird() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
-        //setBackground(Color.blue);
         setFocusable(true);
         addKeyListener(this);
 
@@ -93,6 +91,9 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
                 placePipes();
             }
         });
+
+        //adicionar o botao de comecar aqui!
+
         placePipesTimer.start();
 
         //game timer
@@ -138,7 +139,10 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
 
         //score
         g.setColor(Color.white);
-        g.setFont(new Font("Arial", Font.PLAIN, 32));
+        g.setFont(new Font("Arial", Font.PLAIN, 22));
+
+        //restart message
+        g.drawString("Press R to Restart", 10, 620);
         if (gameOver) {
             g.drawString("Game Over: " + String.valueOf((int) score), 10, 35);
         } else {
@@ -193,8 +197,10 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             velocityY = -9;
+        }
+
+        if (e.getKeyCode() == KeyEvent.VK_R) {
             if (gameOver) {
-                //restart the game by resetting the conditions
                 bird.y = birdY;
                 velocityY = 0;
                 pipes.clear();
