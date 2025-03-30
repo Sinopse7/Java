@@ -15,6 +15,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     Image birdImg;
     Image topPipeImg;
     Image bottomPipeImg;
+    Image paperImg;
 
     //Bird
     int birdX = boardWidth/8;
@@ -32,6 +33,8 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         Bird(Image img){
             this.img = img;
         }
+    
+        int velocityY = 0 ; //move bird up/down speed
     }
 
     //Pipes
@@ -55,8 +58,8 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
 
     //game logic
     Bird bird;
+    Bird paper;
     int velocityX = -4; //move pipes to the left spedd (simulates bird moving right)
-    int velocityY = 0; //move bird up/down speed
     int gravity = 1;
 
     ArrayList<Pipe> pipes;
@@ -79,10 +82,17 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         birdImg = new ImageIcon(getClass().getResource("./flappybird.png")).getImage();
         topPipeImg = new ImageIcon(getClass().getResource("./toppipe.png")).getImage();
         bottomPipeImg = new ImageIcon(getClass().getResource("./bottompipe.png")).getImage();
+        paperImg = new ImageIcon(getClass().getResource("./flappypaper.png")).getImage();
 
         //bird
         bird = new Bird(birdImg);
+        paper = new Bird(paperImg);
+
+        //pipes
         pipes = new ArrayList<Pipe>();
+
+        //adicionar o botao de comecar aqui!
+        
 
         //place pipes timer
         placePipesTimer = new Timer(1500, new ActionListener() {
@@ -91,8 +101,6 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
                 placePipes();
             }
         });
-
-        //adicionar o botao de comecar aqui!
 
         placePipesTimer.start();
 
@@ -130,6 +138,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
 
         //bird
         g.drawImage(bird.img, bird.x, bird.y, birdWidth, birdHeight, null);
+        g.drawImage(paper.img, paper.x, paper.y, birdWidth, birdHeight, null);
 
         //pipes
         for (int i = 0; i < pipes.size(); i++) {
@@ -142,9 +151,10 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         g.setFont(new Font("Arial", Font.PLAIN, 22));
 
         //restart message
-        g.drawString("Press R to Restart", 10, 620);
+        
         if (gameOver) {
             g.drawString("Game Over: " + String.valueOf((int) score), 10, 35);
+            g.drawString("Press 'R' to Restart", 10, 620);
         } else {
             g.drawString(String.valueOf((int) score), 10, 35);
         }
@@ -152,9 +162,13 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
 
     public void move() {
         //bird
-        velocityY += gravity;
-        bird.y += velocityY;
+        bird.velocityY += gravity;
+        bird.y += bird.velocityY;
         bird.y = Math.max(bird.y, 0);
+
+        paper.velocityY += gravity;
+        paper.y += paper.velocityY;
+        paper.y = Math.max(paper.y, 0);
 
         //pipes
         for (int i = 0; i < pipes.size(); i++) {
@@ -166,12 +180,25 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
                 score += 0.5; //0.5 because there are 2 pipes so 0.5*2 = 1, 1 for each set of pipes
             }
 
+            if (!pipe.passed && paper.x > pipe.x + pipe.width) {
+                pipe.passed = true;
+                score += 0.5; //0.5 because there are 2 pipes so 0.5*2 = 1, 1 for each set of pipes
+            }
+
             if (collision(bird, pipe)) {
+                gameOver = true;
+            }
+
+            if (collision(paper, pipe)) {
                 gameOver = true;
             }
         }
 
         if (bird.y > boardHeight) {
+            gameOver = true;
+        }
+
+        if (paper.y > boardHeight) {
             gameOver = true;
         }
     }
@@ -196,20 +223,26 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            velocityY = -9;
+            bird.velocityY = -9;
+        }
+
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            paper.velocityY = -9;
         }
 
         if (e.getKeyCode() == KeyEvent.VK_R) {
             if (gameOver) {
                 bird.y = birdY;
-                velocityY = 0;
+                paper.y = birdY;
+                bird.velocityY = 0;
+                paper.velocityY = 0;
                 pipes.clear();
                 score = 0;
-                gameOver = false;
                 gameLoop.start();
                 placePipesTimer.start();
+                gameOver = false;  
             }
-        }
+        } 
     }
 
     @Override

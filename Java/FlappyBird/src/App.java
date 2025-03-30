@@ -12,9 +12,12 @@ public class App {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         FlappyBird flappyBird = new FlappyBird();
+        FlappyBird flappyPaper = new FlappyBird();
         frame.add(flappyBird);
+        frame.add(flappyPaper);
         frame.pack();
         flappyBird.requestFocus();
+        flappyPaper.requestFocus();
         frame.setVisible(true);
     }
 }
