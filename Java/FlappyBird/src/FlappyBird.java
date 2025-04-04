@@ -49,7 +49,8 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         int width = pipeWidth;
         int height = pipeHeight;
         Image img;
-        boolean passed = false;
+        boolean passedBird = false;
+        boolean passedPaper = false;
 
         Pipe(Image img) {
             this.img = img;
@@ -68,7 +69,11 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     Timer gameLoop;
     Timer placePipesTimer;
     boolean gameOver = false;
-    double score = 0;
+    boolean gameOverBird = false;
+    boolean gameOverPaper = false;
+    boolean paused = true;
+    double scoreBird = 0;
+    double scorePaper = 0;
 
 
 
@@ -151,12 +156,18 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         g.setFont(new Font("Arial", Font.PLAIN, 22));
 
         //restart message
-        
         if (gameOver) {
-            g.drawString("Game Over: " + String.valueOf((int) score), 10, 35);
+            g.drawString("Bird", 10, 35);
+            g.drawString("Paper", 290, 35);
+            g.drawString(String.valueOf((int) scoreBird), 10, 65);
+            g.drawString(String.valueOf((int) scorePaper), 290, 65);
             g.drawString("Press 'R' to Restart", 10, 620);
         } else {
-            g.drawString(String.valueOf((int) score), 10, 35);
+            g.drawString("Bird", 10, 35);
+            g.drawString("Paper", 290, 35);
+            g.drawString(String.valueOf((int) scoreBird), 10, 65);
+            g.drawString(String.valueOf((int) scorePaper), 290, 65);
+            g.drawString("Press 'C'/'BackSpace' to Pause", 10, 620);
         }
     }
 
@@ -175,30 +186,38 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
             Pipe pipe = pipes.get(i);
             pipe.x += velocityX;
 
-            if (!pipe.passed && bird.x > pipe.x + pipe.width) {
-                pipe.passed = true;
-                score += 0.5; //0.5 because there are 2 pipes so 0.5*2 = 1, 1 for each set of pipes
+            if (!pipe.passedBird && bird.x > pipe.x + pipe.width) {
+                if (gameOverBird == false) {
+                    pipe.passedBird = true;
+                    scoreBird += 0.5; //0.5 because there are 2 pipes so 0.5*2 = 1, 1 for each set of pipes
+                }
             }
 
-            if (!pipe.passed && paper.x > pipe.x + pipe.width) {
-                pipe.passed = true;
-                score += 0.5; //0.5 because there are 2 pipes so 0.5*2 = 1, 1 for each set of pipes
+            if (!pipe.passedPaper && paper.x > pipe.x + pipe.width) {
+                if (gameOverPaper == false) {
+                    pipe.passedPaper = true;
+                    scorePaper += 0.5; //0.5 because there are 2 pipes so 0.5*2 = 1, 1 for each set of pipes
+                }
             }
 
             if (collision(bird, pipe)) {
-                gameOver = true;
+                gameOverBird = true;
             }
 
             if (collision(paper, pipe)) {
-                gameOver = true;
+                gameOverPaper = true;
             }
         }
 
         if (bird.y > boardHeight) {
-            gameOver = true;
+            gameOverBird = true;
         }
 
         if (paper.y > boardHeight) {
+            gameOverPaper = true;
+        }
+
+        if (gameOverBird && gameOverPaper) {
             gameOver = true;
         }
     }
@@ -223,11 +242,27 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            bird.velocityY = -9;
+            if (gameOverBird == false) {
+                bird.velocityY = -9;
+            }
         }
 
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            paper.velocityY = -9;
+            if (gameOverPaper == false) {
+                paper.velocityY = -9;
+            }
+        }
+
+        if (e.getKeyCode() == KeyEvent.VK_C || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+            paused = !paused;
+            if (paused == false && gameOver == false) {
+                gameLoop.stop();
+                placePipesTimer.stop();
+            }
+            if (paused == true && gameOver == false) {
+                gameLoop.start();
+                placePipesTimer.start();
+            }
         }
 
         if (e.getKeyCode() == KeyEvent.VK_R) {
@@ -237,10 +272,13 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
                 bird.velocityY = 0;
                 paper.velocityY = 0;
                 pipes.clear();
-                score = 0;
+                scoreBird = 0;
+                scorePaper = 0;
                 gameLoop.start();
                 placePipesTimer.start();
-                gameOver = false;  
+                gameOverBird = false;
+                gameOverPaper = false;
+                gameOver = false;
             }
         } 
     }
